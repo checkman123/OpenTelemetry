@@ -1,0 +1,24 @@
+# Build artifacts
+bin/
+obj/
+
+# IDE
+.vs/
+*.user
+*.suo
+*.userosscache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Docker volumes/data
+tempo-data/
+loki-data/
