@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService", "src\UserServ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOpenTelemetry", "src\TestOpenTelemetry\TestOpenTelemetry.csproj", "{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InventoryService.Host", "src\InventoryService.Host\InventoryService.Host.csproj", "{F3CDE79A-E31D-4AA8-97E9-7EAF2D43E2C8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService.Host", "src\UserService.Host\UserService.Host.csproj", "{17A88CCE-B968-4EB6-9F32-71F4B05CFE25}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA425D6E-A7CE-467F-A261-28FFA9A7A9FB}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
@@ -37,6 +41,14 @@ Global
 		{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3CDE79A-E31D-4AA8-97E9-7EAF2D43E2C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3CDE79A-E31D-4AA8-97E9-7EAF2D43E2C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3CDE79A-E31D-4AA8-97E9-7EAF2D43E2C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3CDE79A-E31D-4AA8-97E9-7EAF2D43E2C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17A88CCE-B968-4EB6-9F32-71F4B05CFE25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17A88CCE-B968-4EB6-9F32-71F4B05CFE25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17A88CCE-B968-4EB6-9F32-71F4B05CFE25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17A88CCE-B968-4EB6-9F32-71F4B05CFE25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

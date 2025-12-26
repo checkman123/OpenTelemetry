@@ -85,6 +85,53 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
 
+  inventory-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.inventory
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:80
+      Kafka__BootstrapServers: kafka:9092
+      Kafka__Topic: inventory-events
+      Kafka__GroupId: inventory-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    depends_on:
+      - kafka
+      - otel-collector
+    ports:
+      - "6001:80"
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.user
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:80
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    depends_on:
+      - otel-collector
+    ports:
+      - "6002:80"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:80
+      Downstream__InventoryGraphQLEndpoint: http://inventory-service/graphql
+      Downstream__UserGraphQLEndpoint: http://user-service/graphql
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    depends_on:
+      - inventory-service
+      - user-service
+      - otel-collector
+    ports:
+      - "5000:80"
+
 volumes:
   tempo-data:
   loki-data:
