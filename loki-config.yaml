@@ -3,40 +3,55 @@ auth_enabled: false
 server:
   http_listen_port: 3100
 
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /var/loki
+  storage:
+    filesystem:
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
 ingester:
   wal:
     enabled: true
     dir: /var/loki/wal
   lifecycler:
-    address: 127.0.0.1
     ring:
       kvstore:
         store: inmemory
       replication_factor: 1
+    final_sleep: 0s
   chunk_idle_period: 5m
   chunk_retain_period: 30s
 
 schema_config:
   configs:
-    - from: 2020-10-24
-      store: boltdb-shipper
+    - from: 2024-01-01
+      store: tsdb
       object_store: filesystem
-      schema: v11
+      schema: v13
       index:
-        prefix: index_
+        prefix: loki_index_
         period: 24h
 
 storage_config:
-  boltdb_shipper:
-    active_index_directory: /var/loki/index
-    cache_location: /var/loki/cache
-    shared_store: filesystem
+  tsdb_shipper:
+    active_index_directory: /var/loki/tsdb-index
+    cache_location: /var/loki/tsdb-cache
   filesystem:
-    directory: /var/loki/chunks
+    directory: /var/loki/tsdb
 
 compactor:
   working_directory: /var/loki/compactor
-  shared_store: filesystem
+  compaction_interval: 10m
+  retention_enabled: true
+  delete_request_store: filesystem
+  delete_request_store_key_prefix: delete_requests/
+  delete_request_store_db_type: boltdb
 
 limits_config:
   retention_period: 168h

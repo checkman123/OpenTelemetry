@@ -49,7 +49,7 @@ services:
       - otel-collector
 
   tempo:
-    image: grafana/tempo:2.4.1
+    image: grafana/tempo:2.9.0
     command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./tempo.yaml:/etc/tempo.yaml:ro
@@ -60,7 +60,7 @@ services:
       - otel-collector
 
   loki:
-    image: grafana/loki:2.9.4
+    image: grafana/loki:3.6.3
     user: "0:0"
     command: ["-config.file=/etc/loki/local-config.yaml"]
     volumes:
@@ -70,7 +70,7 @@ services:
       - "3100:3100"
 
   grafana:
-    image: grafana/grafana:10.4.2
+    image: grafana/grafana:12.4.0-20447603318
     depends_on:
       - prometheus
       - tempo

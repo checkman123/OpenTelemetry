@@ -111,6 +111,13 @@ mutation {
 - Tempo (traces), Prometheus (metrics), Loki (logs) pre-provisioned.
 - OpenTelemetry Collector: `4317` (gRPC) / `4318` (HTTP) OTLP, Prometheus scrape `9464`.
 - Kafka: inside compose `kafka:9092`; host listener `localhost:29092`.
+- Loki 3.x: running `grafana/loki:3.6.3` (single binary, filesystem); requires tsdb storage with schema v13 and removes `shared_store`. Restart Loki after config changes with `docker compose up -d loki`.
+- Logs to Loki: OpenTelemetry Collector exports logs to Loki via OTLP HTTP (`/otlp`) using the modern ingestion path; low-cardinality labels promoted for filtering are `service_name`, `environment`, `module`, `operationType`, and `level`. All other properties stay in structured metadata when you expand a log line.
+- Log readability: Console sink now writes plain text (`[{Timestamp:HH:mm:ss} {Level:u3}] {Message}`) so Loki shows short lines by default; structured metadata (trace/span IDs, module, operationType/Name, environment, service.name) remains available in Loki’s “structured metadata”/labels for filtering.
+- Sample LogQL filters:
+  - By module: `{module="inventory"}` or `{module="users"}`
+  - By operation type: `{operationType="Query"}` `|= "operationName=inventoryItems"`
+  - By level or service: `{level="Warning"}` or `{service_name="test-opentelemetry"}`
 - GraphQL operation logs in Loki: filter `{service.name="test-opentelemetry"} |= "GraphQL operation completed"`; for errors add `|= "success=False"`; introspection logs are Debug.
 - Repository Debug logs in Loki: filter `{service.name="inventory-service"} |= "module=inventory"` or `{service.name="user-service"} |= "module=users"`; look for `durationMs>` patterns to spot slower calls.
 - Logs are exported to the OTel Collector via the Serilog OpenTelemetry sink (OTLP to `http://localhost:4317`) and forwarded to Loki. Ensure the stack is up (`docker compose up -d`) before running the service so logs appear in Grafana.

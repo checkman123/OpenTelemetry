@@ -8,6 +8,18 @@ processors:
   batch:
     timeout: 5s
     send_batch_size: 512
+  transform/loki_labels:
+    error_mode: ignore
+    log_statements:
+      - context: resource
+        statements:
+          - set(attributes["service_name"], attributes["service.name"])
+          - set(attributes["environment"], attributes["deployment.environment"])
+      - context: log
+        statements:
+          - set(attributes["level"], severity_text)
+          - set(attributes["loki.resource.labels"], "service_name,environment")
+          - set(attributes["loki.attribute.labels"], "module,operationType,level")
 
 exporters:
   otlp/tempo:
@@ -16,11 +28,10 @@ exporters:
       insecure: true
   prometheus:
     endpoint: "0.0.0.0:9464"
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
-    default_labels_enabled:
-      exporter: false
-      job: true
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    tls:
+      insecure: true
 
 service:
   pipelines:
@@ -34,5 +45,5 @@ service:
       exporters: [prometheus]
     logs:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [loki]
+      processors: [transform/loki_labels, batch]
+      exporters: [otlphttp/loki]
