@@ -3,6 +3,7 @@ using System.Text.Json;
 using Confluent.Kafka;
 using InventoryService.Models;
 using InventoryService.Observability;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace InventoryService.Kafka;

@@ -1,12 +1,14 @@
 using HotChocolate;
 using HotChocolate.Subscriptions;
+using HotChocolate.Types;
+using InventoryService.Kafka;
 using InventoryService.Models;
 using InventoryService.Services;
-using InventoryService.Kafka;
 
-namespace InventoryService.GraphQL;
+namespace InventoryService.GraphQL.Mutations;
 
-public class Mutation
+[ExtendObjectType("Mutation")]
+public class InventoryMutation
 {
     public async Task<InventoryItem> AddInventoryItem(
         string name,

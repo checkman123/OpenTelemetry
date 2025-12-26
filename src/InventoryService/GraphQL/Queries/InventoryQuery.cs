@@ -1,10 +1,12 @@
 using HotChocolate;
+using HotChocolate.Types;
 using InventoryService.Models;
 using InventoryService.Services;
 
-namespace InventoryService.GraphQL;
+namespace InventoryService.GraphQL.Queries;
 
-public class Query
+[ExtendObjectType("Query")]
+public class InventoryQuery
 {
     public IEnumerable<InventoryItem> GetInventoryItems([Service] InventoryRepository repository)
         => repository.GetAll();

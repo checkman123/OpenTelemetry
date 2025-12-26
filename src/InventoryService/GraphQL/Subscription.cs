@@ -4,6 +4,7 @@ using InventoryService.Models;
 
 namespace InventoryService.GraphQL;
 
+[ExtendObjectType("Subscription")]
 public class Subscription
 {
     [Subscribe]

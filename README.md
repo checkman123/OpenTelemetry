@@ -1,32 +1,38 @@
-# Inventory Service (GraphQL + Kafka + OpenTelemetry)
+# TestOpenTelemetry (GraphQL gateway + Serilog + OpenTelemetry)
 
-Minimal ASP.NET Core 8.0 microservice that exposes a Hot Chocolate GraphQL API, publishes/consumes Kafka events, and ships traces/metrics/logs via OpenTelemetry to a local Grafana stack.
+ASP.NET Core 8 host (`TestOpenTelemetry`) exposing two GraphQL schemas:
+- **InventoryService** (class library): inventory domain, in-memory repository, Kafka producer/consumer (`inventory-events`), GraphQL Query/Mutation/Subscription.
+- **UserService** (class library): user domain, in-memory repository, validation, GraphQL Query/Mutation.
+- **Observability stack** (docker-compose): Kafka + Zookeeper, OpenTelemetry Collector, Prometheus, Tempo, Loki, Grafana.
 
-## Prerequisites
-- .NET 8 SDK
-- Docker & Docker Compose
+## Logging (Serilog)
+- Serilog is the primary logger (structured JSON to console + rolling file `logs/testopentelemetry-log-.json`, 14-day retention).
+- Enrichment: `service.name`, `service.version`, `environment`, `RequestId`, `ConnectionId`, Activity `trace_id` / `span_id` for log/trace correlation.
+- Request logging middleware adjusts level: 4xx→Warning, 5xx/exception→Error; includes method/path/status/elapsed ms.
+- Tuning: `Serilog:MinimumLevel` overrides (e.g., `Microsoft`, `HotChocolate`) in `appsettings*.json` or env vars.
+- GraphQL operation logging: one log per operation (query/mutation) with operationType, operationName, success/failure, errorCount, trace/span IDs; introspection logged at Debug only; document hash logged instead of full query (no custom duration timing).
+- Repository Debug logging: all repository methods emit Debug logs with module tags (`module=inventory`, `module=users`) and durationMs. Enable by setting Debug levels (e.g., `appsettings.Development.json` already raises default to Debug).
 
-## Quick start
-1) Start observability + Kafka stack:
+## Running the system
+1) Start infra (Kafka + OTel + Grafana):
    ```bash
    docker compose up -d
    ```
-2) Run the service locally:
+2) Run the host:
    ```bash
-   cd src/InventoryService
-   dotnet restore
-   dotnet run
+   dotnet run --project src/TestOpenTelemetry
    ```
-   - Kafka configuration via env vars: `Kafka__BootstrapServers` (default `localhost:29092` for host access to the compose broker), `Kafka__Topic` (default `inventory-events`), `Kafka__GroupId` (default `inventory-service`).
-   - OpenTelemetry OTLP endpoint override: `OpenTelemetry__Endpoint` (default `http://localhost:4317`).
-3) Health check: `GET http://localhost:5000/healthz` (or https on 5001).
+   - OTel endpoint override: `OpenTelemetry__Endpoint` or `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://localhost:4317`).
+   - Kafka config for inventory: `Kafka__BootstrapServers` (default `localhost:29092`), `Kafka__Topic` (`inventory-events`), `Kafka__GroupId` (`inventory-service`).
+   - Environment/URLs: `ASPNETCORE_ENVIRONMENT`, `ASPNETCORE_URLS` (default Kestrel ports).
+3) Health check: `GET http://localhost:5000/healthz` (adjust if URLs differ).
 
-## GraphQL
-- Endpoint: `http://localhost:5000/graphql`
-- Subscriptions (WebSocket): `ws://localhost:5000/graphql`
-- Banana Cake Pop UI: `http://localhost:5000/graphql/ui`
+## Endpoints (host)
+- GraphQL (single gateway schema): `http://localhost:5000/graphql`
+- Banana Cake Pop UI (Development only): `http://localhost:5000/graphql/ui`
+- Health: `http://localhost:5000/healthz`
 
-Example operations:
+## Example GraphQL — Inventory (via /graphql)
 ```graphql
 # Query all items
 query {
@@ -66,32 +72,63 @@ subscription {
 }
 ```
 
-## Observability & Grafana
+## Example GraphQL — Users (via /graphql)
+```graphql
+# Query all users
+query {
+  users {
+    id
+    name
+    email
+    createdAt
+  }
+}
+
+# Query by id
+query ($id: ID!) {
+  userById(id: $id) {
+    id
+    name
+    email
+  }
+}
+
+# Add user (logs + traces with correlation)
+mutation {
+  addUser(name: "Ada", email: "ada@example.com") {
+    id
+    name
+    email
+  }
+}
+```
+
+## Observability
 - Grafana: http://localhost:3000 (admin/admin, anonymous enabled)
-- Tempo (traces): pre-provisioned Grafana datasource; OTLP collector exports traces here.
-- Prometheus (metrics): http://localhost:9090, also wired into Grafana.
-- Loki (logs): http://localhost:3100, pre-provisioned in Grafana.
-- OpenTelemetry Collector: exposed on `4317` (gRPC) / `4318` (HTTP) for OTLP, Prometheus scrape endpoint on `9464`.
+- Tempo (traces), Prometheus (metrics), Loki (logs) pre-provisioned.
+- OpenTelemetry Collector: `4317` (gRPC) / `4318` (HTTP) OTLP, Prometheus scrape `9464`.
+- Kafka: inside compose `kafka:9092`; host listener `localhost:29092`.
+- GraphQL operation logs in Loki: filter `{service.name="test-opentelemetry"} |= "GraphQL operation completed"`; for errors add `|= "success=False"`; introspection logs are Debug.
+- Repository Debug logs in Loki: filter `{service.name="test-opentelemetry"} |= "module=inventory"` or `|= "module=users"`; look for `durationMs>` patterns to spot slower calls.
+- Logs are exported to the OTel Collector via the Serilog OpenTelemetry sink (OTLP to `http://localhost:4317`) and forwarded to Loki. Ensure the stack is up (`docker compose up -d`) before running the service so logs appear in Grafana.
 
-Suggested Grafana views:
-- **Explore → Tempo**: search service `inventory-service` to see spans (ASP.NET Core, GraphQL, Kafka producer/consumer).
-- **Explore → Prometheus**: query metrics (e.g., `http_server_request_duration_seconds_count`).
-- **Explore → Loki**: filter by `{service_name="inventory-service"}` for structured logs.
-
-If Loki permissions fail on first run, the compose file already runs the container as root (`user: "0:0"`). If issues persist, remove old volumes and retry: `docker compose down -v && docker compose up -d`.
+Verification tips:
+- **Traces**: Grafana → Tempo, filter `service.name="test-opentelemetry"`; spans include GraphQL + Kafka producer/consumer + ASP.NET Core.
+- **Metrics**: Grafana → Prometheus (e.g., `http_server_request_duration_seconds_count`).
+- **Logs**: Grafana → Loki, query `{service.name="test-opentelemetry"}`; logs carry `trace_id`/`span_id` for correlation.
+- **Correlation**: Copy a `trace_id` from logs (or Tempo) and use it to filter in Loki or Tempo.
 
 ## Project layout
-- `src/InventoryService/Program.cs` – minimal hosting, GraphQL + health endpoint wiring.
-- `src/InventoryService/GraphQL/` – Query, Mutation, Subscription.
-- `src/InventoryService/Kafka/` – producer and background consumer with tracing.
-- `src/InventoryService/Observability/` – OpenTelemetry setup and ActivitySource constants.
-- `src/InventoryService/Services/` – in-memory repository.
-- `docker-compose.yml` – Kafka, Zookeeper, OpenTelemetry Collector, Prometheus, Tempo, Loki, Grafana.
-- `otel-collector-config.yaml`, `prometheus.yml`, `tempo.yaml`, `loki-config.yaml`, `grafana/provisioning/datasources/` – infra configs.
+- `src/TestOpenTelemetry/` – ASP.NET Core host (Serilog, OTel, multi-schema GraphQL endpoints, health).
+- `src/InventoryService/` – class library for inventory domain + GraphQL (Queries/Mutations) + Kafka.
+- `src/UserService/` – class library for user domain + GraphQL (Queries/Mutations).
+- `src/Shared/Logging/` – Serilog helpers and Activity enricher.
+- `docker-compose.yml`, `otel-collector-config.yaml`, `prometheus.yml`, `tempo.yaml`, `loki-config.yaml`, `grafana/provisioning/datasources/` – infra stack.
+- Solution file: `TestOpenTelemetry.sln` (startup: TestOpenTelemetry).
 
-## Running in containers (optional)
-The compose file only starts infra. To containerize the service, add a Dockerfile and a service entry to `docker-compose.yml` pointing at the built image, reusing the same env vars shown above.
-
-## Kafka endpoints
-- Inside the compose network: `kafka:9092` (listener `PLAINTEXT`)
-- From your host: `localhost:29092` (listener `PLAINTEXT_HOST`)
+---
+Changes summary
+- Projects/files added or changed: InventoryService (library), UserService (library), new host `TestOpenTelemetry`, shared Serilog helpers, README updates, solution updated.
+- Run: `docker compose up -d` then `dotnet run --project src/TestOpenTelemetry`.
+- Example GraphQL calls: see Inventory and Users sections above.
+- Confirm observability: Grafana → Loki for logs (`{service.name="test-opentelemetry"}`), Tempo for traces (`service.name="test-opentelemetry"`), Prometheus for metrics; correlate via `trace_id`.

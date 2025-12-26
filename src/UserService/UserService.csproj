@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="2.3.0" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.4" />
-    <PackageReference Include="HotChocolate.Subscriptions" Version="13.9.4" />
     <PackageReference Include="HotChocolate.Diagnostics" Version="13.9.4" />
   </ItemGroup>
 </Project>

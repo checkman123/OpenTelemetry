@@ -14,6 +14,7 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 
 # Rider / VS Code
 .idea/

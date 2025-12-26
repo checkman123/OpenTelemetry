@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Confluent.Kafka;
 using InventoryService.Observability;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace InventoryService.Kafka;

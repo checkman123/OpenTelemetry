@@ -5,6 +5,10 @@ VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InventoryService", "src\InventoryService\InventoryService.csproj", "{61258B85-11E2-4EE5-A519-32879259F0B6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService", "src\UserService\UserService.csproj", "{C515058D-0AFC-4540-BE27-59220BC67AA3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOpenTelemetry", "src\TestOpenTelemetry\TestOpenTelemetry.csproj", "{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EA425D6E-A7CE-467F-A261-28FFA9A7A9FB}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
@@ -25,6 +29,14 @@ Global
 		{61258B85-11E2-4EE5-A519-32879259F0B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61258B85-11E2-4EE5-A519-32879259F0B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61258B85-11E2-4EE5-A519-32879259F0B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C515058D-0AFC-4540-BE27-59220BC67AA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C515058D-0AFC-4540-BE27-59220BC67AA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C515058D-0AFC-4540-BE27-59220BC67AA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C515058D-0AFC-4540-BE27-59220BC67AA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{681F89FB-0E0B-48A5-B602-E4E9A3E10B4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
