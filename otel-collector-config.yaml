@@ -18,9 +18,6 @@ exporters:
     endpoint: "0.0.0.0:9464"
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
-    labels:
-      resource:
-        service.name: "${service.name}"
     default_labels_enabled:
       exporter: false
       job: true

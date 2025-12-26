@@ -1,4 +1,5 @@
 using HotChocolate.AspNetCore;
+using HotChocolate.Diagnostics;
 using InventoryService.GraphQL;
 using InventoryService.Kafka;
 using InventoryService.Observability;
@@ -22,7 +23,7 @@ builder.Services
     .AddInstrumentation(options =>
     {
         options.RenameRootActivity = true;
-        options.Scopes = true;
+        options.Scopes = ActivityScopes.All;
     });
 
 builder.Services.AddOpenTelemetryServices(builder.Configuration);

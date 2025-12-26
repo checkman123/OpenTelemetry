@@ -17,7 +17,7 @@ Minimal ASP.NET Core 8.0 microservice that exposes a Hot Chocolate GraphQL API, 
    dotnet restore
    dotnet run
    ```
-   - Kafka configuration via env vars: `Kafka__BootstrapServers` (default `localhost:9092`), `Kafka__Topic` (default `inventory-events`), `Kafka__GroupId` (default `inventory-service`).
+   - Kafka configuration via env vars: `Kafka__BootstrapServers` (default `localhost:29092` for host access to the compose broker), `Kafka__Topic` (default `inventory-events`), `Kafka__GroupId` (default `inventory-service`).
    - OpenTelemetry OTLP endpoint override: `OpenTelemetry__Endpoint` (default `http://localhost:4317`).
 3) Health check: `GET http://localhost:5000/healthz` (or https on 5001).
 
@@ -78,6 +78,8 @@ Suggested Grafana views:
 - **Explore → Prometheus**: query metrics (e.g., `http_server_request_duration_seconds_count`).
 - **Explore → Loki**: filter by `{service_name="inventory-service"}` for structured logs.
 
+If Loki permissions fail on first run, the compose file already runs the container as root (`user: "0:0"`). If issues persist, remove old volumes and retry: `docker compose down -v && docker compose up -d`.
+
 ## Project layout
 - `src/InventoryService/Program.cs` – minimal hosting, GraphQL + health endpoint wiring.
 - `src/InventoryService/GraphQL/` – Query, Mutation, Subscription.
@@ -89,3 +91,7 @@ Suggested Grafana views:
 
 ## Running in containers (optional)
 The compose file only starts infra. To containerize the service, add a Dockerfile and a service entry to `docker-compose.yml` pointing at the built image, reusing the same env vars shown above.
+
+## Kafka endpoints
+- Inside the compose network: `kafka:9092` (listener `PLAINTEXT`)
+- From your host: `localhost:29092` (listener `PLAINTEXT_HOST`)

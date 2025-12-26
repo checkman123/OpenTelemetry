@@ -63,7 +63,8 @@ public class KafkaProducer : IDisposable
         }
         catch (ProduceException<string, string> ex)
         {
-            activity?.RecordException(ex);
+            activity?.SetTag("exception.type", ex.GetType().FullName);
+            activity?.SetTag("exception.message", ex.Message);
             _logger.LogError(ex, "Failed to publish inventory item {ItemId}", item.Id);
             throw;
         }

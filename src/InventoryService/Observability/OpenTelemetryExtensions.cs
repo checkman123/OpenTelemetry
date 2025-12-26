@@ -18,17 +18,15 @@ public static class OpenTelemetryExtensions
         var environment = configuration.GetValue<string>("OpenTelemetry:DeploymentEnvironment") ?? "local";
         var otlpEndpoint = configuration.GetValue<string>("OpenTelemetry:Endpoint") ?? "http://localhost:4317";
 
-        var resourceBuilder = ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion, serviceInstanceId: Environment.MachineName)
-            .AddAttributes(new[]
-            {
-                new KeyValuePair<string, object>("deployment.environment", environment)
-            });
-
         services.TryAddSingleton(_ => new ActivitySource(TelemetryConstants.ActivitySourceName));
 
         services.AddOpenTelemetry()
-            .ConfigureResource(rb => rb.AddResource(resourceBuilder.Build()))
+            .ConfigureResource(resource => resource
+                .AddService(serviceName: serviceName, serviceVersion: serviceVersion, serviceInstanceId: Environment.MachineName)
+                .AddAttributes(new[]
+                {
+                    new KeyValuePair<string, object>("deployment.environment", environment)
+                }))
             .WithTracing(tracing => tracing
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
@@ -47,7 +45,12 @@ public static class OpenTelemetryExtensions
             options.IncludeFormattedMessage = true;
             options.IncludeScopes = true;
             options.ParseStateValues = true;
-            options.SetResourceBuilder(resourceBuilder);
+            options.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                .AddService(serviceName: serviceName, serviceVersion: serviceVersion)
+                .AddAttributes(new[]
+                {
+                    new KeyValuePair<string, object>("deployment.environment", environment)
+                }));
             options.AddOtlpExporter(exporterOptions => exporterOptions.Endpoint = new Uri(otlpEndpoint));
         }));
 
