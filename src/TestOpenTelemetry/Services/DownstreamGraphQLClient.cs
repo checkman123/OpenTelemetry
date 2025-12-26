@@ -31,12 +31,20 @@ public class DownstreamGraphQLClient
             return default;
         }
 
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var payload = await JsonSerializer.DeserializeAsync<GraphQLResponse<T>>(stream, cancellationToken: cancellationToken);
+        var raw = await response.Content.ReadAsStringAsync(cancellationToken);
+        var payload = JsonSerializer.Deserialize<GraphQLResponse<T>>(raw, SerializerOptions);
 
         if (payload?.Errors is { Count: > 0 })
         {
-            _logger.LogWarning("Downstream GraphQL returned errors client={ClientName} errorCount={ErrorCount}", clientName, payload.Errors.Count);
+            _logger.LogWarning("Downstream GraphQL returned errors client={ClientName} errorCount={ErrorCount} raw={Raw}", clientName, payload.Errors.Count, raw);
+            var joined = string.Join("; ", payload.Errors.Select(e => e.Message));
+            throw new InvalidOperationException($"Downstream GraphQL returned errors for {clientName}: {joined}");
+        }
+
+        if (payload?.Data == null)
+        {
+            _logger.LogWarning("Downstream GraphQL returned null data client={ClientName} raw={Raw}", clientName, raw);
+            throw new InvalidOperationException($"Downstream GraphQL returned null data for {clientName}");
         }
 
         return payload?.Data;
@@ -71,4 +79,9 @@ public class DownstreamGraphQLClient
     {
         public string? Message { get; set; }
     }
+
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 }

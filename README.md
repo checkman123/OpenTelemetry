@@ -118,6 +118,8 @@ mutation {
   - By module: `{module="inventory"}` or `{module="users"}`
   - By operation type: `{operationType="Query"}` `|= "operationName=inventoryItems"`
   - By level or service: `{level="Warning"}` or `{service_name="test-opentelemetry"}`
+- Tempo Drilldown readiness: Tempo (v2.9.0) runs metrics-generator with service-graphs and span-metrics enabled, memberlist ring configured, and generator WAL under `/var/tempo/generator`; this is required for Grafana Traces Drilldown rate()/RED views to work.
+- Tempo TraceQL tip: Equality queries should quote strings, e.g., `{resource.service.name="inventory-service"} | rate()` (quoted value is required; unquoted values will parse error).
 - GraphQL operation logs in Loki: filter `{service.name="test-opentelemetry"} |= "GraphQL operation completed"`; for errors add `|= "success=False"`; introspection logs are Debug.
 - Repository Debug logs in Loki: filter `{service.name="inventory-service"} |= "module=inventory"` or `{service.name="user-service"} |= "module=users"`; look for `durationMs>` patterns to spot slower calls.
 - Logs are exported to the OTel Collector via the Serilog OpenTelemetry sink (OTLP to `http://localhost:4317`) and forwarded to Loki. Ensure the stack is up (`docker compose up -d`) before running the service so logs appear in Grafana.

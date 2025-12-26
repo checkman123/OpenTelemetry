@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UserService.Models;
 
@@ -17,32 +16,22 @@ public class UserRepository
 
     public IEnumerable<User> GetAll()
     {
-        var sw = Stopwatch.StartNew();
-        _logger.LogDebug("GetAll start module=users");
-
         var users = _users.Values.ToList();
-
-        sw.Stop();
-        _logger.LogDebug("GetAll end module=users count={Count} durationMs={DurationMs}", users.Count, sw.Elapsed.TotalMilliseconds);
+        _logger.LogDebug("GetAll module=users count={Count} users={Users}", users.Count, users);
         return users;
     }
 
     public User? GetById(Guid id)
     {
-        var sw = Stopwatch.StartNew();
-        _logger.LogDebug("GetById start module=users id={Id}", id);
-
         var found = _users.TryGetValue(id, out var user);
 
-        sw.Stop();
-        _logger.LogDebug("GetById end module=users id={Id} found={Found} durationMs={DurationMs}", id, found, sw.Elapsed.TotalMilliseconds);
+        _logger.LogDebug("GetById module=users id={Id} found={Found} user={User}", id, found, user);
         return found ? user : null;
     }
 
     public User Add(string name, string email)
     {
-        var sw = Stopwatch.StartNew();
-        _logger.LogDebug("Add start module=users name={Name} email={Email}", name, MaskEmail(email));
+        _logger.LogDebug("Add module=users name={Name} email={Email}", name, MaskEmail(email));
 
         var user = new User
         {
@@ -53,8 +42,7 @@ public class UserRepository
 
         _users[user.Id] = user;
 
-        sw.Stop();
-        _logger.LogDebug("Add end module=users id={Id} durationMs={DurationMs}", user.Id, sw.Elapsed.TotalMilliseconds);
+        _logger.LogDebug("Add module=users id={Id} user={User}", user.Id, user);
         return user;
     }
 

@@ -1,6 +1,7 @@
 using InventoryService.Models;
 using TestOpenTelemetry.Services;
 using UserService.Models;
+using System.Text.Json.Serialization;
 
 namespace TestOpenTelemetry.GraphQL.Mutations;
 
@@ -42,11 +43,13 @@ public class GatewayMutation
 
     private sealed class AddInventoryItemResult
     {
+        [JsonPropertyName("addInventoryItem")]
         public InventoryItem? AddInventoryItem { get; set; }
     }
 
     private sealed class AddUserResult
     {
+        [JsonPropertyName("addUser")]
         public User? AddUser { get; set; }
     }
 }

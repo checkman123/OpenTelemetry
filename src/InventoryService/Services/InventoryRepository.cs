@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using InventoryService.Models;
 using Microsoft.Extensions.Logging;
 
@@ -17,33 +16,21 @@ public class InventoryRepository
 
     public IEnumerable<InventoryItem> GetAll()
     {
-        var sw = Stopwatch.StartNew();
-        _logger.LogDebug("GetAll start module=inventory");
-
         var items = _items.Values.ToList();
-
-        sw.Stop();
-        _logger.LogDebug("GetAll end module=inventory count={Count} durationMs={DurationMs}", items.Count, sw.Elapsed.TotalMilliseconds);
+        _logger.LogDebug("GetAll module=inventory count={Count} items={Items}", items.Count, items);
         return items;
     }
 
     public InventoryItem? GetById(Guid id)
     {
-        var sw = Stopwatch.StartNew();
-        _logger.LogDebug("GetById start module=inventory id={Id}", id);
-
         var found = _items.TryGetValue(id, out var item);
 
-        sw.Stop();
-        _logger.LogDebug("GetById end module=inventory id={Id} found={Found} durationMs={DurationMs}", id, found, sw.Elapsed.TotalMilliseconds);
+        _logger.LogDebug("GetById module=inventory id={Id} found={Found} item={Item}", id, found, item);
         return found ? item : null;
     }
 
     public InventoryItem Add(string name, int quantity)
     {
-        var sw = Stopwatch.StartNew();
-        _logger.LogDebug("Add start module=inventory name={Name} quantity={Quantity}", name, quantity);
-
         var item = new InventoryItem
         {
             Id = Guid.NewGuid(),
@@ -53,8 +40,7 @@ public class InventoryRepository
 
         _items[item.Id] = item;
 
-        sw.Stop();
-        _logger.LogDebug("Add end module=inventory id={Id} durationMs={DurationMs}", item.Id, sw.Elapsed.TotalMilliseconds);
+        _logger.LogDebug("Add module=inventory id={Id} name={Name} quantity={Quantity} item={Item}", item.Id, item.Name, item.Quantity, item);
         return item;
     }
 }
